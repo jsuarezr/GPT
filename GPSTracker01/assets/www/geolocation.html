@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />-->
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100% }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="js/cordova-2.5.0.js"></script>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false">
+    </script>
+    <script type="text/javascript">
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() {
+        var element = document.getElementById('geoTemp');
+        element.innerHTML = 'Ready...';
+        navigator.geolocation.getCurrentPosition(onSuccess, onError, { maximumAge: 3000, timeout: 10000, enableHighAccuracy: false });
+    }
+
+    function onSuccess(position) {
+        var element = document.getElementById('geoTemp');
+        element.innerHTML = 'Success...';                                    
+        initialize(position.coords.latitude, position.coords.longitude);                            
+    }
+
+    function onError(error) {
+        var element = document.getElementById('geoTemp');
+        element.innerHTML = 'Error...';
+        alert('code: '    + error.code    + '\n' +
+                'message: ' + error.message + '\n');
+    }
+
+      function initialize(latitude, longitude) {
+        var mapOptions = {
+          center: new google.maps.LatLng(latitude, longitude),
+          zoom: 12,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("map_canvas"),
+            mapOptions);
+      }
+
+      function onBodyLoad(){
+          alert("test!");
+      }
+    </script>
+  </head>
+  <body>
+    <h2>Location</h2>               
+                <p id="geolocation">Buscando...</p>
+                <p id="geoTemp"></p>
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+  </body>
+</html>

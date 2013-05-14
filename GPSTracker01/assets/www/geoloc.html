@@ -1,0 +1,335 @@
+<!DOCTYPE HTML>
+<!--
+/*
+ * Copyright 2013 Red Folder Consultancy Ltd
+ *   
+ * Licensed under the Apache License, Version 2.0 (the "License");   
+ * you may not use this file except in compliance with the License.   
+ * You may obtain a copy of the License at       
+ * 
+ * 	http://www.apache.org/licenses/LICENSE-2.0   
+ *
+ * Unless required by applicable law or agreed to in writing, software   
+ * distributed under the License is distributed on an "AS IS" BASIS,   
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   
+ * See the License for the specific language governing permissions and   
+ * limitations under the License.
+ */
+-->
+<html>
+	<head>
+		<title>GPSTracker v1.0</title>
+		
+		<script type="text/javascript" charset="utf-8" src="js/cordova-2.5.0.js"></script>
+		<script type="text/javascript" src="js/backgroundService-2.5.0.js"></script>
+		<script type="text/javascript" src="js/myService-2.5.0.js"></script>
+		
+		<style type="text/css">
+			body {
+				background-color: #FFCC66;
+				background-image: url(“image/correr1.jpg”);
+				background-repeat: no-repeat;
+			}
+ 		</style>
+ 
+        <script type="text/javascript" >
+        	var myService = cordova.require('cordova/plugin/myService');
+        	
+        	var time = new Date().getTime();
+           
+        
+            var date = new Date(time);
+        	
+        	
+        	
+        	document.addEventListener('deviceready', function() {
+				getStatus();
+  			}, true);
+
+ 			function handleSuccess(data) {
+ 				updateView(data);
+ 			}
+ 			
+ 			function handleError(data) {
+				alert("Error: " + data.ErrorMessage);
+ 				alert(JSON.stringify(data));
+				updateView(data);
+ 			}
+
+			/*
+			 * Button Handlers
+			 */ 			
+ 			function getStatus() {
+ 			
+ 	 			var latitudToTxt = document.getElementById("latitudTxt");
+				latitudToTxt.value =   "(sin datos)" ;                    
+		        var longitudToTxt = document.getElementById("longitudTxt");
+				longitudToTxt.value =    "(sin datos)" ;
+				var velocidadTxt = document.getElementById("velocidadTxt");
+				velocidadTxt.value =   "(sin datos)" ; 
+				var altitudTxt = document.getElementById("altitudTxt");
+				altitudTxt.value =    "(sin datos)" ;
+			    var horaTxt = document.getElementById("horaTxt");
+				horaTxt.value = date ;  
+				 
+		        navigator.geolocation.getCurrentPosition(onSuccess, onError);
+		
+ 			    myService.getStatus(	function(r){handleSuccess(r)},
+ 										function(e){handleError(e)});
+ 			};
+ 			
+ 			function startService() {
+				myService.startService(	function(r){handleSuccess(r)},
+										function(e){handleError(e)});
+										 
+ 			}
+
+ 			function stopService() {
+	 			myService.stopService(	function(r){handleSuccess(r)},
+ 										function(e){handleError(e)});
+ 										 
+			}
+
+ 			function enableTimer() {
+				myService.enableTimer(	120000,
+										function(r){handleSuccess(r)},
+										function(e){handleError(e)});
+										 
+ 			}
+
+ 			function disableTimer() {
+	 			myService.disableTimer(	function(r){handleSuccess(r)},
+ 										function(e){handleError(e)});
+ 										 
+			};
+			 			
+ 			 function registerForBootStart(data) {
+             if (data.RegisteredForBootStart)
+                 alert('Servicio Iniciado, configurado para iniciarse en el arranque');
+              else
+                 myService.registerForBootStart( function(r){ alert('Servicio Iniciado, configurado para iniciarse en el arranque') },
+                                               function(e){ alert('Error al iniciar') });
+              }
+
+ 			function deregisterForBootStart() {
+				myService.deregisterForBootStart(	function(r){handleSuccess(r)},
+													function(e){handleError(e)});
+ 			}
+
+ 			function setConfig() {
+
+ 				
+ 				var latitudToTxt = document.getElementById("latitudTxt");
+ 				var latitudToString = latitudToTxt.value;
+ 				
+ 				var longitudToTxt = document.getElementById("longitudTxt");
+ 				var longitudToString = longitudToTxt.value;
+ 				
+ 				var alturaToTxt = document.getElementById("altitudTxt");
+ 				var alturaToString = alturaToTxt.value;
+ 				
+ 				var velocidadToTxt = document.getElementById("velocidadTxt");
+ 				var velocidadToString = velocidadToTxt.value;
+ 				
+ 				var config = { 
+ 								
+ 								"LatitudTxt" : latitudToString,
+ 								"LongitudTxt" : longitudToString,
+ 								"VelocidadTxt" : velocidadToString,
+ 								"AlturaTxt" : alturaToString
+ 							}; 
+				myService.setConfiguration(	config,
+											function(r){handleSuccess(r)},
+											function(e){handleError(e)});
+ 			}
+
+			/*
+			 * View logic
+			 */
+ 			function updateView(data) {
+				var serviceBtn = document.getElementById("toggleService");
+				var timerBtn = document.getElementById("toggleTimer");
+				var bootBtn = document.getElementById("toggleBoot");
+				// var updateBtn = document.getElementById("updateBtn");
+			 // var refreshBtn = document.getElementById("refreshBtn");
+
+				var serviceStatus = document.getElementById("serviceStatus");
+				var timerStatus = document.getElementById("timerStatus");
+				var bootStatus = document.getElementById("bootStatus");
+
+				serviceBtn.disabled = false;
+				if (data.ServiceRunning) {
+					serviceStatus.innerHTML = "ARRANCADO";
+					timerStatus.innerHTML = "EN CARRERA";
+					
+					serviceBtn.onclick = stopService;
+				     timerBtn.disabled = true;
+					
+					//if (data.TimerEnabled) {
+						timerStatus.innerHTML = "EN CARRERA";
+						 timerBtn.onclick = disableTimer;
+					/* } else {
+						timerStatus.innerHTML = "PARADO";
+						 timerBtn.onclick = enableTimer;
+					} 
+ */
+					//updateBtn.disabled = false;
+					//updateBtn.onclick = setConfig;
+
+				//	refreshBtn.disabled = false;
+				//	refreshBtn.onclick = getStatus;
+
+				} else { 
+					serviceStatus.innerHTML = "PARADO";
+					serviceBtn.onclick = startService;
+					timerStatus.innerHTML = "PARADO";
+					timerBtn.disabled = true;
+					timerEnabled = false; 
+
+					// updateBtn.disabled = true;
+					// refreshBtn.disabled = true;
+				} 
+
+				bootBtn.disabled = false;
+				if (data.RegisteredForBootStart) {
+					bootStatus.innerHTML = "SI";
+					bootBtn.onclick = deregisterForBootStart;
+				} else {
+					bootStatus.innerHTML = "NO";
+					bootBtn.onclick = registerForBootStart;
+				}
+				
+ 			}
+
+
+
+// onSuccess Geolocation
+
+    function onSuccess(position) {
+        
+   /* 
+        var element = document.getElementById('geolocation');
+        element.innerHTML = 'Latitud: '           + position.coords.latitude              + '<br />' +
+                            'Longitud: '          + position.coords.longitude             + '<br />' +
+                            'Altura: '           + position.coords.altitude              + '<br />' +
+                            'Precision: '           + position.coords.accuracy              + '<br />' +
+                            'Precision altura: '  + position.coords.altitudeAccuracy      + '<br />' +
+                            'Encabezamiento: '            + position.coords.heading               + '<br />' +
+                            'Velocidad: '              + position.coords.speed                 + '<br />' +
+                            'Timestamp: '          + new Date(position.timestamp)          + '<br />';
+ 
+ */
+        var latitudToTxt = document.getElementById("latitudTxt");
+		latitudToTxt.value = position.coords.latitude ;                    
+        var longitudToTxt = document.getElementById("longitudTxt");
+		longitudToTxt.value = position.coords.longitude ; 
+		var velocidadTxt = document.getElementById("velocidadTxt");
+		velocidadTxt.value = position.coords.speed ; 
+		var altitudTxt = document.getElementById("altitudTxt");
+		altitudTxt.value = position.coords.altitude ; 
+		 var horaTxt = document.getElementById("horaTxt");
+		horaTxt.value = date ;                    
+                          
+    }
+
+    // onError Callback receives a PositionError object
+    //
+    function onError(error) {
+        alert('code: '    + error.code    + '\n' +
+              'message: ' + error.message + '\n');
+    }
+    
+    
+    
+     document.addEventListener("deviceready", onDeviceReady, false);
+
+    
+     
+     function onDeviceReady() {
+		    // Ahora es seguro utilizar la API PhoneGap
+		     startService();
+		     
+		    //  enableTimer(); 
+     }
+    
+    
+    // updateView(data);
+    
+		</script>
+		
+	</head>
+	
+	<body>
+	
+           <center>
+          <h2>GEOPOSICIONAMIENTO</h2>
+            </center>
+            
+
+		 
+		
+		<table>
+		<tr>
+				<th>ESTADO</th>
+				<td><div id="timerStatus"></div></td>
+				<td>
+				 </td>
+			</tr>
+			
+			
+			
+			
+			<tr>
+				<th colspan=3 align="center">DATOS</th>
+			</tr>
+
+			<tr>
+				<th align="left">Latitud</th>
+				<td colspan=2 align="center"><input id="latitudTxt" type="Text"/></td>
+			</tr>
+			<tr>
+				<th align="left">Longitud</th>
+				<td colspan=2 align="center"><input id="longitudTxt" type="Text"/></td>
+			</tr>
+			<tr>
+				<th align="left">Altura</th>
+				<td colspan=2 align="center"><input id="altitudTxt" type="Text"/></td>
+			</tr>
+			<tr>
+				<th align="left">Velocidad</th>
+				<td colspan=2 align="center"><input id="velocidadTxt" type="Text"/></td>
+			</tr>
+			<tr>
+				<th align="left">Hora</th>
+				<td colspan=2 align="center"><input id="horaTxt" type="Text"/></td>
+			</tr>
+			
+			<tr>
+				<td colspan=3 align="center"><div id="resultMessage"></div></td>
+			</tr>
+			
+			
+			<tr>
+				<th>ESTADO: </th>
+				<td><div id="serviceStatus"></div></td>
+				<td><input enabled id="toggleService" type="button" value="cambia"/></td>
+			</tr>
+			
+			<tr>
+				<th>Iniciar al arrancar</th>
+				<td><div id="bootStatus"></div></td>
+				<td><input disabled id="toggleBoot" type="button" value="cambia"/>
+				 </td>
+			</tr>
+			<tr>
+				<td colspan=3 align="center"> <input disabled id="toggleTimer" type="button" value="cambia"/>
+		        <input disabled id="refreshBtn" type="button" value="Actualizar"/></td>
+			</tr>
+						<!-- <tr>
+				<td colspan=3 align="center"><input enabled id="updateBtn" type="button" value="Update Config"/></td>
+			</tr>-->
+		</table>
+		<!-- <p id="geolocation">Buscando geolocacion...</p> -->
+ 
+	</body>
+</html>
